@@ -6,19 +6,18 @@ const int width = 800;
 const int height = 600;
 
 
-int gen = 0;
-void DrawTree(float x , float y, float angle, float lenght, float thickness)
+void DrawTree(float x , float y, float angle, float length, float thickness)
 {
   Vector2 start = {x , y};
-  float x_end = x + sinf(angle * DEG2RAD) * lenght;
-  float y_end = y - cosf(angle * DEG2RAD) * lenght;
+  float x_end = x + sinf(angle * DEG2RAD) * length;
+  float y_end = y - cosf(angle * DEG2RAD) * length;
   Vector2 end = {x_end , y_end};
   DrawLineEx(start,end,thickness, BLACK);
-  float new_length = lenght * 0.7; 
+  float new_length = length * 0.7; 
   float new_thickness = thickness * 0.7;
   float new_left_angle= angle + 20;
-  float new_right_angle= angle - 20;
-  if(new_length < 1) return;
+  float new_right_angle= angle - 40;
+  if(new_length < 5) return;
   DrawTree(x_end, y_end,new_right_angle,new_length, new_thickness);
   DrawTree(x_end, y_end,new_left_angle,new_length, new_thickness);
 }
