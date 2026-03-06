@@ -3,7 +3,7 @@
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
-
+const int FPS = 60;
 typedef struct {
   float x;
   float y;
@@ -26,14 +26,27 @@ Point project(Point p)
   p.y = p.y/(float)p.z;
   return p;
 }
+
+Point frame(Point p)
+{
+  const float dt = 1/FPS;
+  float dz = 1;
+  dz += 1*dt;
+  p.z += dz;
+  p = project(p);
+  p = drawPoint(p);
+  return p;
+
+}
 int main(void) 
 {
   SDL_Init(SDL_INIT_VIDEO);
   SDL_Window* window = SDL_CreateWindow("3D-Cube", SDL_WINDOWPOS_CENTERED ,SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH,SCREEN_HEIGHT,0);
   SDL_Surface* surface = SDL_GetWindowSurface(window);
-  Point p = {0,0,2};
-  p =  project(p) ;
-  p =  drawPoint(p) ;
+  Point p = {0,0,1};
+  p = frame(p);
+  //p =  project(p) ;
+  //p =  drawPoint(p) ;
   SDL_Rect rectangle = {p.x,p.y,20,20};
   SDL_FillRect(surface,&rectangle,0xfffff);
   SDL_UpdateWindowSurface(window);
