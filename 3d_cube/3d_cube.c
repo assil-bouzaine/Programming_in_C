@@ -24,47 +24,48 @@ void project(Point *p)
   p->y = p->y / p->z;
 }
 
-void rotateY(Point* p, float* angle)
+void rotateY(Point* p, float angle)
 {
-  p->x = p->x*cosf(*angle) + p->z*sinf(*angle);
-  p->z = -(p->x*sinf(*angle)) + p->z*cosf(*angle);
+  float newX = p->x*cosf(angle) + p->z*sinf(angle);
+  float newZ = -(p->x*sinf(angle)) + p->z*cosf(angle);
+  p->x = newX;
+  p->z = newZ;
+}
+
+void cameraOffset(Point* p, float distance)
+{
+  p->z = p->z + distance;
 }
 
 
-
-void frame(Point *p, float *dz, float* angle)
+void drawPoint(SDL_Renderer* renderer,Point* p)
 {
-  float dt = 1.0f/FPS;
-  rotateY(p,angle);
-  *dz += 0.1f*dt;
-  p->z += *dz;
-  project(p);
-  transform(p);
+  SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+  SDL_FRect rect = {p->x,p->y,10,10};
+  SDL_RenderFillRectF(renderer,&rect);
 }
-
-
 
 int main(void) 
 {
   SDL_Init(SDL_INIT_VIDEO);
   SDL_Window* window = SDL_CreateWindow("3D-Cube", SDL_WINDOWPOS_CENTERED ,SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH,SCREEN_HEIGHT,0);
   SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-  Point cube_points[] = {
+  Point points[] = {
     //front
-    {0.5,0.5,0.5},
-    {0.5,-0.5,0.5},
-    {-0.5,0.5,0.5},
-    {-0.5,-0.5,0.5},
+    {0.25,0.25,0.25},
+    {0.25,-0.25,0.25},
+    {-0.25,0.25,0.25},
+    {-0.25,-0.25,0.25},
     //back
-    {0.5,0.5,-0.5},
-    {0.5,-0.5,-0.5},
-    {-0.5,0.5,-0.5},
-    {-0.5,-0.5,-0.5},
+    {0.25,0.25,-0.25},
+    {0.25,-0.25,-0.25},
+    {-0.25,0.25,-0.25},
+    {-0.25,-0.25,-0.25},
   };
-  int num_points = sizeof(cube_points)/sizeof(cube_points[0]);
-  int running = 1;
   SDL_Event event;
-  float dz = 1.0f;
+  int num_points = sizeof(points)/sizeof(points[0]);
+  int running = 1;
+  float distance = 1.0f;
   float angle = 0.0f;
 
   while(running)
@@ -79,13 +80,17 @@ int main(void)
 
     for(int i=0; i < num_points; i++)
     {
-      Point p = cube_points[i];
-      frame(&p, &dz, &angle);
-      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-      SDL_FRect rect = {p.x,p.y,10,10};
-      SDL_RenderFillRectF(renderer,&rect);
+      Point p = points[i];
+      rotateY(&p,angle);
+      cameraOffset(&p, distance);
+      project(&p);
+      transform(&p);
+      drawPoint(renderer , &p);
     }
+    // angle should change after each loop
     angle += 0.02f; 
+
+
     SDL_RenderPresent(renderer);
     SDL_Delay(1000/FPS);
   }
