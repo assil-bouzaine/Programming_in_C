@@ -2,6 +2,8 @@
 #define LEETCODE_H
 
 
+#include<stdbool.h>
+
 
 int* twoSum(int* nums, int numsSize, int target, int* returnSize);
 void reverseString(char* s, int sSize);

@@ -4,6 +4,8 @@
 
 int main()
 {
-  int x = 10;
-  odd(x);
+  char* s = "nagaram";
+  char* v = "nagaram";
+
+ printf("%d \n",isAnagram(s,v) );
 }

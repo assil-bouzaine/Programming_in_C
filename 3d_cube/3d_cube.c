@@ -1,56 +1,96 @@
 #include<stdio.h>
+#include<math.h>
 #include<SDL2/SDL.h>
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
-const int FPS = 60;
+#define FPS 60
+
 typedef struct {
   float x;
   float y;
   float z;
 }Point;
 
-Point drawPoint(Point p) 
+void transform(Point* p)
 {
-  p.x =(( p.x + 1)/2.0f)*SCREEN_WIDTH;
-  p.y =(1- ( p.y + 1)/2.0f)*SCREEN_HEIGHT;
-  return p;
+  p->x = ((p->x + 1 )/2 ) * SCREEN_WIDTH -10;
+  p->y = (1- ((p->y + 1 )/2) ) * SCREEN_HEIGHT -10;
+}
 
+void project(Point *p)
+{
+  p->x = p->x / p->z;
+  p->y = p->y / p->z;
+}
+
+void rotateY(Point* p, float* angle)
+{
+  p->x = p->x*cosf(*angle) + p->z*sinf(*angle);
+  p->z = -(p->x*sinf(*angle)) + p->z*cosf(*angle);
 }
 
 
 
-Point project(Point p)
+void frame(Point *p, float *dz, float* angle)
 {
-  p.x = p.x/(float)p.z;
-  p.y = p.y/(float)p.z;
-  return p;
+  float dt = 1.0f/FPS;
+  rotateY(p,angle);
+  *dz += 0.1f*dt;
+  p->z += *dz;
+  project(p);
+  transform(p);
 }
 
-Point frame(Point p)
-{
-  const float dt = 1/FPS;
-  float dz = 1;
-  dz += 1*dt;
-  p.z += dz;
-  p = project(p);
-  p = drawPoint(p);
-  return p;
 
-}
+
 int main(void) 
 {
   SDL_Init(SDL_INIT_VIDEO);
   SDL_Window* window = SDL_CreateWindow("3D-Cube", SDL_WINDOWPOS_CENTERED ,SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH,SCREEN_HEIGHT,0);
-  SDL_Surface* surface = SDL_GetWindowSurface(window);
-  Point p = {0,0,1};
-  p = frame(p);
-  //p =  project(p) ;
-  //p =  drawPoint(p) ;
-  SDL_Rect rectangle = {p.x,p.y,20,20};
-  SDL_FillRect(surface,&rectangle,0xfffff);
-  SDL_UpdateWindowSurface(window);
-  SDL_Delay(5000);
+  SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+  Point cube_points[] = {
+    //front
+    {0.5,0.5,0.5},
+    {0.5,-0.5,0.5},
+    {-0.5,0.5,0.5},
+    {-0.5,-0.5,0.5},
+    //back
+    {0.5,0.5,-0.5},
+    {0.5,-0.5,-0.5},
+    {-0.5,0.5,-0.5},
+    {-0.5,-0.5,-0.5},
+  };
+  int num_points = sizeof(cube_points)/sizeof(cube_points[0]);
+  int running = 1;
+  SDL_Event event;
+  float dz = 1.0f;
+  float angle = 0.0f;
+
+  while(running)
+  {
+    while(SDL_PollEvent(&event))
+    {
+      if(event.type == SDL_QUIT) running = 0;
+    }
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    for(int i=0; i < num_points; i++)
+    {
+      Point p = cube_points[i];
+      frame(&p, &dz, &angle);
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+      SDL_FRect rect = {p.x,p.y,10,10};
+      SDL_RenderFillRectF(renderer,&rect);
+    }
+    angle += 0.02f; 
+    SDL_RenderPresent(renderer);
+    SDL_Delay(1000/FPS);
+  }
+  SDL_DestroyRenderer(renderer);
+  SDL_DestroyWindow(window);
+  SDL_Quit();
   return 0;
 }
-

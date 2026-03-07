@@ -2,6 +2,7 @@
 #include<stdlib.h> 
 #include<stdio.h> 
 #include<stdbool.h> 
+#include<string.h> 
 
 
 // twoSum
@@ -43,14 +44,23 @@ void reverseString(char* s, int sSize)
   }
 }
 
+// compare function is needed for qsort()
+int compare(const void* a, const void* b)
+{
+  return (*(int*)a - *(int*)b);
+}
+
+
+int compareString(const void* a, const void* b)
+{
+  char ca = *(char*)a;
+  char cb = *(char*)b;
+  return (ca > cb) - (ca < cb);
+}
+
 //containsDuplicate
 bool containsDuplicate(int* nums, int numsSize)
 {
-  // compare function is needed for qsort()
-  int compare(const void* a, const void* b)
-  {
-    return (*(int*)a - *(int*)b);
-  }
 
   qsort(nums,numsSize,sizeof(int),compare);
   for(int i = 1; i < numsSize; i++) {
@@ -65,5 +75,13 @@ bool containsDuplicate(int* nums, int numsSize)
 // isAnagram
 bool isAnagram(char* s, char* t)
 {
+  if(strlen(s) != strlen(t))
+    return false;
 
+  char* s_copy = strdup(s);
+  char* t_copy = strdup(t);
+  qsort(s_copy,strlen(s_copy),sizeof(char),compareString);
+  qsort(t_copy,strlen(t_copy),sizeof(char),compareString);
+  int result = strcmp(s_copy, t_copy);
+  return (result == 0)? true: false;
 }
