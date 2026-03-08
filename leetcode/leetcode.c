@@ -85,3 +85,9 @@ bool isAnagram(char* s, char* t)
   int result = strcmp(s_copy, t_copy);
   return (result == 0)? true: false;
 }
+
+//diagonalSum
+int diagonalSum(int** mat, int matSize, int* matColSize)
+{
+  
+}
