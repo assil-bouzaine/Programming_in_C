@@ -54,16 +54,32 @@ int main(void)
     //front
     {0.25,0.25,0.25},
     {0.25,-0.25,0.25},
-    {-0.25,0.25,0.25},
     {-0.25,-0.25,0.25},
+    {-0.25,0.25,0.25},
     //back
     {0.25,0.25,-0.25},
     {0.25,-0.25,-0.25},
-    {-0.25,0.25,-0.25},
     {-0.25,-0.25,-0.25},
+    {-0.25,0.25,-0.25},
+  };
+
+  int edges[][2]= {
+    {0,1},
+    {1,2},
+    {2,3},
+    {3,0},
+    {4,5},
+    {5,6},
+    {6,7},
+    {7,4},
+    {0,4},
+    {1,5},
+    {2,6},
+    {3,7},
   };
   SDL_Event event;
   int num_points = sizeof(points)/sizeof(points[0]);
+  int num_edges = sizeof(edges)/sizeof(edges[0]);
   int running = 1;
   float distance = 1.0f;
   float angle = 0.0f;
@@ -77,6 +93,7 @@ int main(void)
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
+    Point transformed_points[num_points];
 
     for(int i=0; i < num_points; i++)
     {
@@ -85,11 +102,18 @@ int main(void)
       cameraOffset(&p, distance);
       project(&p);
       transform(&p);
-      drawPoint(renderer , &p);
+     // drawPoint(renderer , &p);
+      transformed_points[i] = p;
     }
     // angle should change after each loop
     angle += 0.02f; 
-
+    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+    for(int i=0; i < num_edges; i++)
+    {
+      Point a = transformed_points[edges[i][0]];
+      Point b = transformed_points[edges[i][1]];
+      SDL_RenderDrawLineF(renderer,a.x,a.y,b.x,b.y);
+    }
 
     SDL_RenderPresent(renderer);
     SDL_Delay(1000/FPS);
