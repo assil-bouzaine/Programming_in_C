@@ -32,17 +32,73 @@ void rotateY(Point* p, float angle)
   p->z = newZ;
 }
 
-void cameraOffset(Point* p, float distance)
+void rotateZ(Point* p, float angle)
 {
-  p->z = p->z + distance;
+  float newX = p->x*cosf(angle) - p->y*sinf(angle);
+  float newY = (p->x*sinf(angle)) + p->y*cosf(angle);
+  p->x = newX;
+  p->y = newY;
 }
 
+
+void rotateX(Point* p, float angle)
+{
+  float newY = p->y*cosf(angle) - p->z*sinf(angle);
+  float newZ = (p->y*sinf(angle)) + p->z*cosf(angle);
+  p->y = newY;
+  p->z = newZ;
+}
+void cameraOffsetZ(Point* p, float offsetZ)
+{
+  p->z = p->z + offsetZ;
+}
+
+void cameraOffsetX(Point* p, float offsetX)
+{
+  p->x = p->x + offsetX;
+}
+
+void cameraOffsetY(Point* p, float offsetY)
+{
+  p->y = p->y + offsetY;
+}
 
 void drawPoint(SDL_Renderer* renderer,Point* p)
 {
   SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
   SDL_FRect rect = {p->x,p->y,10,10};
   SDL_RenderFillRectF(renderer,&rect);
+}
+
+
+void drawCube(SDL_Renderer* renderer, Point* p,int edges[][2], int num_points,int num_edges, float angle, float offsetX, float offsetY, float offsetZ)
+{
+    Point transformed_points[num_points];
+
+    for(int i=0; i < num_points; i++)
+    {
+      Point new_points = p[i];
+      rotateY(&new_points,angle);
+      rotateX(&new_points,angle);
+      rotateZ(&new_points,angle);
+      cameraOffsetZ(&new_points, offsetZ);
+      cameraOffsetY(&new_points, offsetY);
+      cameraOffsetX(&new_points, offsetX);
+      project(&new_points);
+      transform(&new_points);
+     // drawPoint(renderer , &new_points);
+      transformed_points[i] = new_points;
+    }
+
+
+    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+    for(int i=0; i < num_edges; i++)
+    {
+      Point a = transformed_points[edges[i][0]];
+      Point b = transformed_points[edges[i][1]];
+      SDL_RenderDrawLineF(renderer,a.x,a.y,b.x,b.y);
+    }
+
 }
 
 int main(void) 
@@ -52,15 +108,15 @@ int main(void)
   SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
   Point points[] = {
     //front
-    {0.25,0.25,0.25},
-    {0.25,-0.25,0.25},
-    {-0.25,-0.25,0.25},
-    {-0.25,0.25,0.25},
+    {0.11,0.11,0.11},
+    {0.11,-0.11,0.11},
+    {-0.11,-0.11,0.11},
+    {-0.11,0.11,0.11},
     //back
-    {0.25,0.25,-0.25},
-    {0.25,-0.25,-0.25},
-    {-0.25,-0.25,-0.25},
-    {-0.25,0.25,-0.25},
+    {0.11,0.11,-0.11},
+    {0.11,-0.11,-0.11},
+    {-0.11,-0.11,-0.11},
+    {-0.11,0.11,-0.11},
   };
 
   int edges[][2]= {
@@ -81,7 +137,6 @@ int main(void)
   int num_points = sizeof(points)/sizeof(points[0]);
   int num_edges = sizeof(edges)/sizeof(edges[0]);
   int running = 1;
-  float distance = 1.0f;
   float angle = 0.0f;
 
   while(running)
@@ -90,31 +145,27 @@ int main(void)
     {
       if(event.type == SDL_QUIT) running = 0;
     }
-
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
-    Point transformed_points[num_points];
-
-    for(int i=0; i < num_points; i++)
+    for(float i=0.25; i < 1.0f; i+=0.25)
     {
-      Point p = points[i];
-      rotateY(&p,angle);
-      cameraOffset(&p, distance);
-      project(&p);
-      transform(&p);
-     // drawPoint(renderer , &p);
-      transformed_points[i] = p;
+      float sign = 1.0f;
+      for(int j=0; j < 2; j++)
+      {
+        drawCube(renderer,points,edges,num_points,num_edges,angle,i*sign,i*sign,1.0f);
+        sign *= -1.0f;
+      }
+      sign = 1.0f;
+      for(int j=0; j < 2; j++)
+      {
+        drawCube(renderer,points,edges,num_points,num_edges,angle,-i*sign,i*sign,1.0f);
+        sign *= -1.0f;
+      }
     }
+    drawCube(renderer,points,edges,num_points,num_edges,angle,0.0f,0.0f,1.0f);
+
     // angle should change after each loop
     angle += 0.02f; 
-    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-    for(int i=0; i < num_edges; i++)
-    {
-      Point a = transformed_points[edges[i][0]];
-      Point b = transformed_points[edges[i][1]];
-      SDL_RenderDrawLineF(renderer,a.x,a.y,b.x,b.y);
-    }
-
     SDL_RenderPresent(renderer);
     SDL_Delay(1000/FPS);
   }
