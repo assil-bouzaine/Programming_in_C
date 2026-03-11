@@ -86,11 +86,11 @@ void drawCube(SDL_Renderer* renderer, Point* p,int edges[][2], int num_points,in
       cameraOffsetX(&new_points, offsetX);
       project(&new_points);
       transform(&new_points);
-     // drawPoint(renderer , &new_points);
+    //  drawPoint(renderer , &new_points);
       transformed_points[i] = new_points;
     }
 
-
+    //connect the points 
     SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
     for(int i=0; i < num_edges; i++)
     {
@@ -106,6 +106,7 @@ int main(void)
   SDL_Init(SDL_INIT_VIDEO);
   SDL_Window* window = SDL_CreateWindow("3D-Cube", SDL_WINDOWPOS_CENTERED ,SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH,SCREEN_HEIGHT,0);
   SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+  //cube points
   Point points[] = {
     //front
     {0.11,0.11,0.11},
@@ -118,7 +119,8 @@ int main(void)
     {-0.11,-0.11,-0.11},
     {-0.11,0.11,-0.11},
   };
-
+  
+  //cube edges
   int edges[][2]= {
     {0,1},
     {1,2},
@@ -133,9 +135,34 @@ int main(void)
     {2,6},
     {3,7},
   };
+
+  Point triangle[] = {
+    {0.25,-0.25,0.25},
+    {-0.25,-0.25,0.25},
+    {0,0.25,0.25},
+
+    
+    {0.25,-0.25,-0.25},
+    {-0.25,-0.25,-0.25},
+    {0,0.25,-0.25},
+  };
+
+  int triangle_edges[][2] = {
+    {0,1},
+    {1,2},
+    {2,0},
+    {3,4},
+    {4,5},
+    {5,3},
+    {0,3},
+    {1,4},
+    {2,5},
+  };
   SDL_Event event;
   int num_points = sizeof(points)/sizeof(points[0]);
+  int num_t_points= sizeof(triangle)/sizeof(triangle[0]);
   int num_edges = sizeof(edges)/sizeof(edges[0]);
+  int num_t_edges = sizeof(triangle_edges)/sizeof(triangle_edges[0]);
   int running = 1;
   float angle = 0.0f;
 
@@ -147,21 +174,22 @@ int main(void)
     }
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
-    for(float i=0.25; i < 1.0f; i+=0.25)
-    {
-      float sign = 1.0f;
-      for(int j=0; j < 2; j++)
-      {
-        drawCube(renderer,points,edges,num_points,num_edges,angle,i*sign,i*sign,1.0f);
-        sign *= -1.0f;
-      }
-      sign = 1.0f;
-      for(int j=0; j < 2; j++)
-      {
-        drawCube(renderer,points,edges,num_points,num_edges,angle,-i*sign,i*sign,1.0f);
-        sign *= -1.0f;
-      }
-    }
+   for(float i=0.25; i < 1.0f; i+=0.25)
+   {
+     float sign = 1.0f;
+     for(int j=0; j < 2; j++)
+     {
+       drawCube(renderer,points,edges,num_points,num_edges,angle,i*sign,i*sign,1.0f);
+       sign *= -1.0f;
+     }
+     sign = 1.0f;
+     for(int j=0; j < 2; j++)
+     {
+       drawCube(renderer,points,edges,num_points,num_edges,angle,-i*sign,i*sign,1.0f);
+       sign *= -1.0f;
+     }
+   }
+//    drawCube(renderer,triangle,triangle_edges,num_t_points,num_t_edges,angle,0.0f,0.0f,1.0f);
     drawCube(renderer,points,edges,num_points,num_edges,angle,0.0f,0.0f,1.0f);
 
     // angle should change after each loop
