@@ -4,4 +4,5 @@
 
 clang -o cp cp.c
 
-./cp fah hello
+./cp fah what eh hello
+
